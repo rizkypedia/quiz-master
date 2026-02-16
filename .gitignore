@@ -1,0 +1,24 @@
+# Go
+/bin/
+/tmp/
+*.exe
+*.test
+*.out
+
+# Air
+.air.toml.tmp
+/tmp/
+
+# Env
+.env
+.env.local
+
+# Docker
+**/.dockerignore
+
+# Editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
