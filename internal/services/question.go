@@ -1,10 +1,8 @@
 package services
 
 import (
-	"errors"
 	"github/rizkypedia/quiz-master/internal/database"
 	"github/rizkypedia/quiz-master/internal/models"
-	"strings"
 
 	"gorm.io/gorm"
 )
@@ -26,14 +24,10 @@ func GetQuestions() ([]models.Question, error) {
 	return questions, err
 }
 
-func CreateQuestion(q string) error {
-	qClean := strings.Trim(q, " ")
-	length := len(qClean)
-	if length == 0 {
-		return errors.New("Empty question is not allowed")
+func CreateQuestion(question models.Question) error {
+	err := database.DB.Create(&question).Error
+	if err != nil {
+		return err
 	}
-	question := models.Question{
-		Question: qClean,
-	}
-	return database.DB.Create(&question).Error
+	return nil
 }

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"github/rizkypedia/quiz-master/internal/dto"
+	"github/rizkypedia/quiz-master/internal/models"
 	"github/rizkypedia/quiz-master/internal/services"
 	"net/http"
 
@@ -39,18 +40,49 @@ func GetQuestions(c *gin.Context) {
 		"items": dtos,
 		"count": len(dtos),
 	})
-
 }
 
-func AddQuestion(c *gin.Context) {
-	var body struct {
-		Question string `json:"question"`
-	}
-	c.BindJSON(&body)
-
-	if err := services.CreateQuestion(body.Question); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+func CreateQuestion(c *gin.Context) {
+	var input dto.CreateQuestionDTO
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+		})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"status": "created"})
+
+	if input.Question == nil || input.CategoryId == nil || input.Answers == nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Missing require fields",
+		})
+	}
+	q := models.Question{
+		Question:   *input.Question,
+		CategoryId: *input.CategoryId,
+	}
+
+	if input.Answers != nil {
+		for _, a := range *input.Answers {
+			if a.Answer == nil || a.IsCorrect == nil {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"message": "Answers field is required",
+				})
+				return
+			}
+			q.Answers = append(q.Answers, models.Answers{
+				Answer:    *a.Answer,
+				IsCorrect: *a.IsCorrect,
+			})
+		}
+	}
+
+	if err := services.CreateQuestion(q); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{
+		"status": "created",
+	})
 }

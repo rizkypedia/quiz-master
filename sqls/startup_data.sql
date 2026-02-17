@@ -27,12 +27,12 @@ INSERT INTO public.answers (answer,updated_at,deleted_at,created_at,is_correct) 
 	 ('Berlin',1,now(),NULL,now(),true),
 	 ('München',1,now(),NULL,now(),false);
 
-	 INSERT INTO public.answers (answer,question_id,question_id,updated_at,deleted_at,created_at,is_correct) VALUES
+	 INSERT INTO public.answers (answer,question_id,updated_at,deleted_at,created_at,is_correct) VALUES
 	 ('Braga',now(),2,NULL,now(),false),
 	 ('Porto',now(),2,NULL,now(),false),
 	 ('Lisbon',now(),2,NULL,now(),true),
 
-	 INSERT INTO public.answers (answer,question_id,question_id,updated_at,deleted_at,created_at,is_correct) VALUES
+	 INSERT INTO public.answers (answer,question_id,updated_at,deleted_at,created_at,is_correct) VALUES
 	 ('Valencia',3,now(),NULL,now(),false),
 	 ('Madrid',3,now(),NULL,now(),true),
 	 ('Barcelona',3,now(),NULL,now(),false),

@@ -60,3 +60,16 @@ func GetCategoryById(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, dtoObj)
 }
+
+func CreateCategory(c *gin.Context) {
+	var requestBody dto.CreateCategoryDTO
+	c.BindJSON(&requestBody)
+
+	if err := services.CreateCategory(requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"status": "category created"})
+
+}

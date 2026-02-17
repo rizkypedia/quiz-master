@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"github/rizkypedia/quiz-master/internal/database"
+	"github/rizkypedia/quiz-master/internal/dto"
 	"github/rizkypedia/quiz-master/internal/models"
 
 	"gorm.io/gorm"
@@ -26,4 +27,12 @@ func GetCategoryById(id uint) (*models.Category, error) {
 		return nil, gorm.ErrRecordNotFound
 	}
 	return &cat, err
+}
+
+func CreateCategory(input dto.CreateCategoryDTO) error {
+	category := models.Category{
+		Name:       input.Name,
+		QuizTypeID: input.QuizType.ID,
+	}
+	return database.DB.Create(&category).Error
 }
