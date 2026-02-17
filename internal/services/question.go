@@ -12,7 +12,6 @@ import (
 func GetQuestions() ([]models.Question, error) {
 	var questions []models.Question
 
-	// err := database.DB.Preload("Answers").Find(&questions).Error
 	err := database.DB.Preload("Answers", func(db *gorm.DB) *gorm.DB {
 		return db.Order("answers.id ASC")
 	}).

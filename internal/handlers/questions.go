@@ -1,37 +1,12 @@
 package handlers
 
 import (
+	"github/rizkypedia/quiz-master/internal/dto"
 	"github/rizkypedia/quiz-master/internal/services"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
-
-type QuizTypeDTO struct {
-	ID   uint   `json:"id"`
-	Name string `json:"name"`
-}
-
-type CategoryDTO struct {
-	ID       uint        `json:"id"`
-	Name     string      `json:"name"`
-	QuizType QuizTypeDTO `json:"quizType"`
-}
-
-type AnswerDTO struct {
-	ID         uint   `json:"id"`
-	Answer     string `json:"answer"`
-	QuestionId uint   `json:"questionId"`
-	IsCorrect  bool   `json:"isCorrect"`
-}
-
-type QuestionDTO struct {
-	ID         uint        `json:"id"`
-	Question   string      `json:"question"`
-	CategoryId uint        `json:"categoryId"`
-	Category   CategoryDTO `json:"category"`
-	Answers    []AnswerDTO `json:"answers"`
-}
 
 func GetQuestions(c *gin.Context) {
 	qs, err := services.GetQuestions()
@@ -40,19 +15,19 @@ func GetQuestions(c *gin.Context) {
 		return
 	}
 
-	dtos := make([]QuestionDTO, len(qs))
+	dtos := make([]dto.QuestionDTO, len(qs))
 	for i, q := range qs {
-		answers := make([]AnswerDTO, len(q.Answers))
+		answers := make([]dto.AnswerDTO, len(q.Answers))
 		for j, a := range q.Answers {
-			answers[j] = AnswerDTO{
+			answers[j] = dto.AnswerDTO{
 				ID: a.ID, Answer: a.Answer, QuestionId: a.QuestionId, IsCorrect: a.IsCorrect,
 			}
 		}
-		dtos[i] = QuestionDTO{
+		dtos[i] = dto.QuestionDTO{
 			ID: q.ID, Question: q.Question, CategoryId: q.CategoryId,
-			Category: CategoryDTO{
+			Category: dto.CategoryDTO{
 				ID: q.Category.ID, Name: q.Category.Name,
-				QuizType: QuizTypeDTO{
+				QuizType: dto.QuizTypeDTO{
 					ID: q.Category.QuizType.ID, Name: q.Category.QuizType.Name,
 				},
 			},
