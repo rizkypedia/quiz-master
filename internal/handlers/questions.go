@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"github/rizkypedia/quiz-master/internal/dto"
 	"github/rizkypedia/quiz-master/internal/models"
 	"github/rizkypedia/quiz-master/internal/services"
@@ -51,31 +52,13 @@ func CreateQuestion(c *gin.Context) {
 		return
 	}
 
-	if input.Question == nil || input.CategoryId == nil || input.Answers == nil {
+	q, err := prepareQuestion(input)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Missing require fields",
+			"message": err.Error(),
 		})
+		return
 	}
-	q := models.Question{
-		Question:   *input.Question,
-		CategoryId: *input.CategoryId,
-	}
-
-	if input.Answers != nil {
-		for _, a := range *input.Answers {
-			if a.Answer == nil || a.IsCorrect == nil {
-				c.JSON(http.StatusBadRequest, gin.H{
-					"message": "Answers field is required",
-				})
-				return
-			}
-			q.Answers = append(q.Answers, models.Answers{
-				Answer:    *a.Answer,
-				IsCorrect: *a.IsCorrect,
-			})
-		}
-	}
-
 	if err := services.CreateQuestion(q); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -85,4 +68,43 @@ func CreateQuestion(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{
 		"status": "created",
 	})
+}
+
+// func prepareQuestions(inputs []dto.CreateQuestionDTO) ([]*models.Question, error) {
+// 	var questions []*models.Question
+
+// 	for _, input := range inputs {
+// 		q, err := prepareQuestion(input)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		questions = append(questions, q)
+// 	}
+
+// 	return questions, nil
+// }
+
+func prepareQuestion(input dto.CreateQuestionDTO) (*models.Question, error) {
+	if input.Question == nil || input.CategoryId == nil || input.Answers == nil {
+		return nil, errors.New("Missing required fields")
+	}
+
+	q := models.Question{
+		Question:   *input.Question,
+		CategoryId: *input.CategoryId,
+	}
+
+	if input.Answers != nil {
+		for _, a := range *input.Answers {
+			if a.Answer == nil || a.IsCorrect == nil {
+				return nil, errors.New("Answers field is required")
+			}
+			q.Answers = append(q.Answers, models.Answers{
+				Answer:    *a.Answer,
+				IsCorrect: *a.IsCorrect,
+			})
+		}
+	}
+
+	return &q, nil
 }

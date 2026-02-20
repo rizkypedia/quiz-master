@@ -24,7 +24,7 @@ func GetQuestions() ([]models.Question, error) {
 	return questions, err
 }
 
-func CreateQuestion(question models.Question) error {
+func CreateQuestion(question *models.Question) error {
 	err := database.DB.Create(&question).Error
 	if err != nil {
 		return err
