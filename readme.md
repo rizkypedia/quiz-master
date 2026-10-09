@@ -1,6 +1,16 @@
-# Go Gin API Starter
+# Quiz Master API
 
-This is a template for Apps with Go Gin
+Quiz Master is a backend API for building quiz applications. It provides endpoints
+for managing quiz categories, questions, answer choices, and users, so a frontend
+or another client can create and deliver quizzes without implementing its own
+quiz-data service.
+
+Categories group related questions. Each question has its own quiz type, allowing
+single-choice and multiple-choice questions to coexist in the same category.
+Questions contain answer choices, with correct answers identified by the API.
+User registration and login are supported with JWT-based authentication.
+
+## Technology stack
 
 - Go 1.25
 - Gin
