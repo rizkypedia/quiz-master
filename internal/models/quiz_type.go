@@ -4,5 +4,5 @@ import "gorm.io/gorm"
 
 type QuizType struct {
 	gorm.Model
-	Name string
+	Name string `gorm:"not null"`
 }

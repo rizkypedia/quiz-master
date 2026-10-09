@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func GetQuestions(c *gin.Context) {
@@ -27,11 +28,10 @@ func GetQuestions(c *gin.Context) {
 		}
 		dtos[i] = dto.QuestionDTO{
 			ID: q.ID, Question: q.Question, CategoryId: q.CategoryId,
+			QuizTypeID: q.QuizTypeID,
+			QuizType:   dto.QuizTypeDTO{ID: q.QuizType.ID, Name: q.QuizType.Name},
 			Category: dto.CategoryDTO{
 				ID: q.Category.ID, Name: q.Category.Name,
-				QuizType: dto.QuizTypeDTO{
-					ID: q.Category.QuizType.ID, Name: q.Category.QuizType.Name,
-				},
 			},
 			Answers: answers,
 		}
@@ -60,6 +60,14 @@ func CreateQuestion(c *gin.Context) {
 		return
 	}
 	if err := services.CreateQuestion(q); err != nil {
+		if errors.Is(err, services.ErrInvalidQuestion) {
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			return
+		}
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"message": "category or quiz type not found"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
@@ -70,40 +78,25 @@ func CreateQuestion(c *gin.Context) {
 	})
 }
 
-// func prepareQuestions(inputs []dto.CreateQuestionDTO) ([]*models.Question, error) {
-// 	var questions []*models.Question
-
-// 	for _, input := range inputs {
-// 		q, err := prepareQuestion(input)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		questions = append(questions, q)
-// 	}
-
-// 	return questions, nil
-// }
-
 func prepareQuestion(input dto.CreateQuestionDTO) (*models.Question, error) {
-	if input.Question == nil || input.CategoryId == nil || input.Answers == nil {
-		return nil, errors.New("Missing required fields")
+	if input.Question == nil || input.CategoryId == nil || input.QuizTypeID == nil || input.Answers == nil {
+		return nil, errors.New("question, categoryId, quizTypeId, and answers are required")
 	}
 
 	q := models.Question{
 		Question:   *input.Question,
 		CategoryId: *input.CategoryId,
+		QuizTypeID: *input.QuizTypeID,
 	}
 
-	if input.Answers != nil {
-		for _, a := range *input.Answers {
-			if a.Answer == nil || a.IsCorrect == nil {
-				return nil, errors.New("Answers field is required")
-			}
-			q.Answers = append(q.Answers, models.Answers{
-				Answer:    *a.Answer,
-				IsCorrect: *a.IsCorrect,
-			})
+	for _, a := range *input.Answers {
+		if a.Answer == nil || a.IsCorrect == nil {
+			return nil, errors.New("each answer requires answer text and isCorrect")
 		}
+		q.Answers = append(q.Answers, models.Answers{
+			Answer:    *a.Answer,
+			IsCorrect: *a.IsCorrect,
+		})
 	}
 
 	return &q, nil

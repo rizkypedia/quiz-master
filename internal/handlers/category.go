@@ -19,7 +19,7 @@ func GetCategories(c *gin.Context) {
 	}
 	dtos := make([]dto.CategoryDTO, len(cs))
 	for i, c := range cs {
-		dtos[i] = dto.CategoryDTO{ID: c.ID, Name: c.Name, QuizType: dto.QuizTypeDTO{ID: c.QuizType.ID, Name: c.QuizType.Name}}
+		dtos[i] = dto.CategoryDTO{ID: c.ID, Name: c.Name}
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -30,11 +30,12 @@ func GetCategories(c *gin.Context) {
 
 func GetCategoryById(c *gin.Context) {
 	idStr := c.Param("id")
-	id64, err := strconv.ParseUint(idStr, 10, 64)
-	if err != nil {
+	id64, err := strconv.ParseUint(idStr, 10, strconv.IntSize)
+	if err != nil || id64 == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "invalid id",
 		})
+		return
 	}
 	id := uint(id64)
 
@@ -53,19 +54,22 @@ func GetCategoryById(c *gin.Context) {
 	dtoObj := dto.CategoryDTO{
 		ID:   cat.ID,
 		Name: cat.Name,
-		QuizType: dto.QuizTypeDTO{
-			ID:   cat.QuizType.ID,
-			Name: cat.QuizType.Name,
-		},
 	}
 	c.JSON(http.StatusOK, dtoObj)
 }
 
 func CreateCategory(c *gin.Context) {
 	var requestBody dto.CreateCategoryDTO
-	c.BindJSON(&requestBody)
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
 
 	if err := services.CreateCategory(requestBody); err != nil {
+		if errors.Is(err, services.ErrInvalidCategory) {
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			return
+		}
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}

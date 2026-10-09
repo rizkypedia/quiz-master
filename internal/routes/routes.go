@@ -15,6 +15,7 @@ func RegisterRoutes(r *gin.Engine) {
 	r.GET("/categories", handlers.GetCategories)
 	r.GET("/category/:id", handlers.GetCategoryById)
 	r.POST("/category", handlers.CreateCategory)
+	r.GET("/quiz-types", handlers.GetQuizTypes)
 	auth := r.Group("/")
 	auth.Use(middleware.AuthRequired())
 	auth.GET("/profile", handlers.Profile)

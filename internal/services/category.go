@@ -2,6 +2,8 @@ package services
 
 import (
 	"errors"
+	"strings"
+
 	"github/rizkypedia/quiz-master/internal/database"
 	"github/rizkypedia/quiz-master/internal/dto"
 	"github/rizkypedia/quiz-master/internal/models"
@@ -9,9 +11,11 @@ import (
 	"gorm.io/gorm"
 )
 
+var ErrInvalidCategory = errors.New("invalid category")
+
 func GetCategories() ([]models.Category, error) {
 	var categories []models.Category
-	err := database.DB.Preload("QuizType").Find(&categories).Error
+	err := database.DB.Order("categories.id ASC").Find(&categories).Error
 	if err != nil {
 		return nil, err
 	}
@@ -20,9 +24,7 @@ func GetCategories() ([]models.Category, error) {
 
 func GetCategoryById(id uint) (*models.Category, error) {
 	var cat models.Category
-	err := database.DB.
-		Preload("QuizType").
-		First(&cat, id).Error
+	err := database.DB.First(&cat, id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, gorm.ErrRecordNotFound
 	}
@@ -30,9 +32,11 @@ func GetCategoryById(id uint) (*models.Category, error) {
 }
 
 func CreateCategory(input dto.CreateCategoryDTO) error {
+	if strings.TrimSpace(input.Name) == "" {
+		return ErrInvalidCategory
+	}
 	category := models.Category{
-		Name:       input.Name,
-		QuizTypeID: input.QuizType.ID,
+		Name: strings.TrimSpace(input.Name),
 	}
 	return database.DB.Create(&category).Error
 }

@@ -15,6 +15,15 @@ This is a template for Apps with Go Gin
 - Docker
 - Docker Compose
 - Make
+- Go
+
+## Tests
+
+Tests are kept in the root `tests/` directory and run with:
+
+```bash
+make test
+```
 
 ## Setup
 
@@ -24,6 +33,26 @@ docker compose up -d db
 make migrate-up
 docker compose up --build
 ```
+
+## Quiz data API
+
+Categories group questions but do not determine their answer format. Each question
+references its own quiz type. Use `GET /quiz-types` to retrieve quiz type IDs,
+then include `quizTypeId` when creating a question:
+
+```json
+{
+  "question": "What is the capital of Germany?",
+  "categoryId": 1,
+  "quizTypeId": 2,
+  "answers": [
+    { "answer": "Berlin", "isCorrect": true },
+    { "answer": "Hamburg", "isCorrect": false }
+  ]
+}
+```
+
+Create categories with only a name, for example `{"name":"Geography"}`.
 
 ## Migration Restart from scratch (Clean DB)
 

@@ -6,7 +6,7 @@ import (
 
 type Answers struct {
 	gorm.Model
-	Answer     string
-	QuestionId uint
-	IsCorrect  bool
+	Answer     string `gorm:"not null"`
+	QuestionId uint   `gorm:"not null"`
+	IsCorrect  bool   `gorm:"not null;default:false"`
 }

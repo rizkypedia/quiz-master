@@ -6,9 +6,8 @@ type QuizTypeDTO struct {
 }
 
 type CategoryDTO struct {
-	ID       uint        `json:"id"`
-	Name     string      `json:"name"`
-	QuizType QuizTypeDTO `json:"quizType"`
+	ID   uint   `json:"id"`
+	Name string `json:"name"`
 }
 
 type AnswerDTO struct {
@@ -23,13 +22,13 @@ type QuestionDTO struct {
 	Question   string      `json:"question"`
 	CategoryId uint        `json:"categoryId"`
 	Category   CategoryDTO `json:"category,omitempty"`
+	QuizTypeID uint        `json:"quizTypeId"`
+	QuizType   QuizTypeDTO `json:"quizType"`
 	Answers    []AnswerDTO `json:"answers,omitempty"`
 }
 
 type CreateCategoryDTO struct {
-	ID       uint         `json:"id"`
-	Name     string       `json:"name"`
-	QuizType *QuizTypeDTO `json:"quizType,omitempty"`
+	Name string `json:"name" binding:"required"`
 }
 
 type CreateAnswerDTO struct {
@@ -40,5 +39,11 @@ type CreateAnswerDTO struct {
 type CreateQuestionDTO struct {
 	Question   *string            `json:"question" binding:"required"`
 	CategoryId *uint              `json:"categoryId" binding:"required"`
+	QuizTypeID *uint              `json:"quizTypeId" binding:"required"`
 	Answers    *[]CreateAnswerDTO `json:"answers" binding:"required"`
+}
+
+type AuthRequestDTO struct {
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
 }

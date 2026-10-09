@@ -11,3 +11,6 @@ migrate-force:
 
 migrate-version:
 	docker compose run --rm migrate version
+
+test:
+	go test ./...
