@@ -37,12 +37,42 @@ make test
 
 ## Setup
 
+The backend provides the API and database used by the
+[Quiz Master frontend](https://github.com/rizkypedia/quiz-master-fe). The
+frontend is a separate project and cannot load categories, run quizzes, or
+calculate results without this backend running.
+
 ```bash
 cp .env.example .env
+# Set FRONTEND_URL=http://localhost:5174 in .env for the local Vite frontend.
 docker compose up -d db
 make migrate-up
 docker compose up --build
 ```
+
+The API listens on `http://localhost:8080`. Start this backend and its database
+before starting the frontend. In a separate terminal, follow the install and
+run instructions in the
+[frontend README](https://github.com/rizkypedia/quiz-master-fe#readme); the
+frontend's Vite server uses `http://localhost:5174` by default. `FRONTEND_URL`
+must match the frontend's address: the backend uses it both to generate
+shareable quiz links and to allow browser requests through CORS.
+
+## Frontend integration
+
+The frontend is the participant-facing UI; the backend remains the source of
+truth for category availability, quiz questions, correct answers, secure links,
+and scores. The frontend calls this API directly and uses these endpoints:
+
+- `GET /categories` to show active categories.
+- `POST /quiz-link` with `{"categoryId":1}` to create a secure share link.
+- `GET /quiz?token=...` to retrieve the questions for that category. A valid
+  secure token is required.
+- `POST /quiz/result?token=...` to submit answers and receive the score.
+
+Secure links expire after 12 hours. Deactivating a category prevents new links
+and invalidates access through its existing links. The quiz API returns answer
+choices without correctness information; scoring is performed by the backend.
 
 ## Quiz data API
 
