@@ -6,15 +6,15 @@ type QuizTypeDTO struct {
 }
 
 type CategoryDTO struct {
-	ID   uint   `json:"id"`
-	Name string `json:"name"`
+	ID     uint   `json:"id"`
+	Name   string `json:"name"`
+	Active bool   `json:"active"`
 }
 
 type AnswerDTO struct {
 	ID         uint   `json:"id"`
 	Answer     string `json:"answer"`
 	QuestionId uint   `json:"questionId"`
-	IsCorrect  bool   `json:"isCorrect"`
 }
 
 type QuestionDTO struct {
@@ -24,11 +24,27 @@ type QuestionDTO struct {
 	Category   CategoryDTO `json:"category,omitempty"`
 	QuizTypeID uint        `json:"quizTypeId"`
 	QuizType   QuizTypeDTO `json:"quizType"`
-	Answers    []AnswerDTO `json:"answers,omitempty"`
+	Answers    []AnswerDTO `json:"answers"`
+}
+
+type QuizAnswerSubmission struct {
+	QuestionID uint   `json:"questionId" binding:"required"`
+	AnswerIDs  []uint `json:"answerIds"`
+}
+
+type QuizResultDTO struct {
+	CategoryID   uint `json:"categoryId"`
+	CorrectCount int  `json:"correctCount"`
+	TotalCount   int  `json:"totalCount"`
+	Percentage   int  `json:"percentage"`
 }
 
 type CreateCategoryDTO struct {
 	Name string `json:"name" binding:"required"`
+}
+
+type SetCategoryActiveDTO struct {
+	Active *bool `json:"active" binding:"required"`
 }
 
 type CreateAnswerDTO struct {

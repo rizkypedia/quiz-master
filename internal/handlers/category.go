@@ -19,7 +19,7 @@ func GetCategories(c *gin.Context) {
 	}
 	dtos := make([]dto.CategoryDTO, len(cs))
 	for i, c := range cs {
-		dtos[i] = dto.CategoryDTO{ID: c.ID, Name: c.Name}
+		dtos[i] = dto.CategoryDTO{ID: c.ID, Name: c.Name, Active: c.Active}
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -51,11 +51,42 @@ func GetCategoryById(c *gin.Context) {
 		})
 		return
 	}
+	if !cat.Active {
+		c.JSON(http.StatusNotFound, gin.H{})
+		return
+	}
 	dtoObj := dto.CategoryDTO{
-		ID:   cat.ID,
-		Name: cat.Name,
+		ID:     cat.ID,
+		Name:   cat.Name,
+		Active: cat.Active,
 	}
 	c.JSON(http.StatusOK, dtoObj)
+}
+
+func SetCategoryActive(c *gin.Context) {
+	id64, err := strconv.ParseUint(c.Param("id"), 10, strconv.IntSize)
+	if err != nil || id64 == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid id"})
+		return
+	}
+
+	var requestBody dto.SetCategoryActiveDTO
+	if err := c.ShouldBindJSON(&requestBody); err != nil || requestBody.Active == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "active is required"})
+		return
+	}
+
+	err = services.SetCategoryActive(uint(id64), *requestBody.Active)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		c.JSON(http.StatusNotFound, gin.H{"message": "category not found"})
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "category updated"})
 }
 
 func CreateCategory(c *gin.Context) {

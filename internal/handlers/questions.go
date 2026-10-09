@@ -11,38 +11,6 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetQuestions(c *gin.Context) {
-	qs, err := services.GetQuestions()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-		return
-	}
-
-	dtos := make([]dto.QuestionDTO, len(qs))
-	for i, q := range qs {
-		answers := make([]dto.AnswerDTO, len(q.Answers))
-		for j, a := range q.Answers {
-			answers[j] = dto.AnswerDTO{
-				ID: a.ID, Answer: a.Answer, QuestionId: a.QuestionId, IsCorrect: a.IsCorrect,
-			}
-		}
-		dtos[i] = dto.QuestionDTO{
-			ID: q.ID, Question: q.Question, CategoryId: q.CategoryId,
-			QuizTypeID: q.QuizTypeID,
-			QuizType:   dto.QuizTypeDTO{ID: q.QuizType.ID, Name: q.QuizType.Name},
-			Category: dto.CategoryDTO{
-				ID: q.Category.ID, Name: q.Category.Name,
-			},
-			Answers: answers,
-		}
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"items": dtos,
-		"count": len(dtos),
-	})
-}
-
 func CreateQuestion(c *gin.Context) {
 	var input dto.CreateQuestionDTO
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -61,6 +29,10 @@ func CreateQuestion(c *gin.Context) {
 	}
 	if err := services.CreateQuestion(q); err != nil {
 		if errors.Is(err, services.ErrInvalidQuestion) {
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			return
+		}
+		if errors.Is(err, services.ErrInactiveCategory) {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}

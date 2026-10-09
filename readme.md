@@ -62,7 +62,11 @@ then include `quizTypeId` when creating a question:
 }
 ```
 
-Create categories with only a name, for example `{"name":"Geography"}`.
+Create categories with only a name, for example `{"name":"Geography"}`. New
+categories are active by default. `GET /categories` returns active categories
+only; authenticate and send `PUT /category/:id/active` with
+`{"active":false}` or `{"active":true}` to change availability. Inactive
+categories cannot be selected for new quiz links, and links to them stop working.
 
 ## Migration Restart from scratch (Clean DB)
 

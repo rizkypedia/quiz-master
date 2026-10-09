@@ -11,6 +11,7 @@ import (
 )
 
 var ErrInvalidQuestion = quizrules.ErrInvalidQuestion
+var ErrInactiveCategory = fmt.Errorf("category is inactive")
 
 func GetQuestions() ([]models.Question, error) {
 	var questions []models.Question
@@ -42,6 +43,9 @@ func CreateQuestion(question *models.Question) error {
 		var category models.Category
 		if err := tx.First(&category, question.CategoryId).Error; err != nil {
 			return err
+		}
+		if !category.Active {
+			return ErrInactiveCategory
 		}
 		var quizType models.QuizType
 		if err := tx.First(&quizType, question.QuizTypeID).Error; err != nil {
